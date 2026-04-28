@@ -40,3 +40,6 @@ Aplikasi ini dilengkapi dengan serangkaian fitur kompleks yang siap pakai untuk 
 - **Manajemen Konfigurasi**: `godotenv` untuk file `.env`
 - **Session Management**: `gin-contrib/sessions` untuk Flash Messages
 
+
+
+![alt text](image.png)
