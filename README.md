@@ -1,4 +1,4 @@
-# Aplikasi Manajemen Inventaris - Jack Sound Audio
+# Aplikasi
 
 Aplikasi web internal yang dirancang untuk pelacakan stok, harga, dan lokasi fisik sparepart dan komponen elektronik secara efisien. Dibangun dengan Go (Gin) dan MySQL, aplikasi ini menyediakan antarmuka yang bersih, cepat, dan fungsional untuk mengelola inventaris harian.
 
