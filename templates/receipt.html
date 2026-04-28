@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Struk {{ .ReceiptID }}</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background: #e0e0e0; display: flex; justify-content: center; padding: 20px; }
+        .receipt { background: #fff; width: 300px; padding: 20px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .line { border-bottom: 1px dashed #000; margin: 10px 0; }
+        .flex { display: flex; justify-content: space-between; }
+        .text-sm { font-size: 12px; }
+        .mt { margin-top: 10px; }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .receipt { width: 100%; border: none; box-shadow: none; padding: 0; }
+            .no-print { display: none; }
+        }
+        .btn { display: block; width: 100%; padding: 10px; background: #000; color: #fff; text-align: center; text-decoration: none; font-family: sans-serif; margin-top: 20px; cursor: pointer; border: none; }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <div class="center">
+            <h2 style="margin:0;">JACK SOUND AUDIO</h2>
+            <p class="text-sm" style="margin:5px 0;">Jl. Contoh No. 123, Kota</p>
+            <p class="text-sm" style="margin:0;">Telp: 0812-3456-7890</p>
+        </div>
+        <div class="line"></div>
+        <div class="text-sm">
+            <div class="flex"><span>No:</span><span>{{ .ReceiptID }}</span></div>
+            <div class="flex"><span>Tgl:</span><span>{{ .Date }}</span></div>
+            <div class="flex"><span>Kasir:</span><span>{{ .Cashier }}</span></div>
+            <div class="flex"><span>Tipe:</span><span class="bold">{{ if eq .Type "OUT" }}Penjualan{{ else }}Restock Masuk{{ end }}</span></div>
+        </div>
+        <div class="line"></div>
+        
+        <div class="text-sm">
+            {{ range .Items }}
+            <div style="margin-bottom: 5px;">
+                <div class="bold">{{ .Desc }}</div>
+                <div class="flex">
+                    <span>{{ .Qty }} x {{ rupiah .Price }}</span>
+                    <span>{{ rupiah .Total }}</span>
+                </div>
+            </div>
+            {{ end }}
+        </div>
+        
+        <div class="line"></div>
+        <div class="flex bold">
+            <span>TOTAL</span>
+            <span>Rp {{ rupiah .Total }}</span>
+        </div>
+        <div class="line"></div>
+        
+        <div class="center text-sm mt">
+            <p>Terima kasih atas kunjungan Anda!</p>
+            <p>Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.</p>
+        </div>
+
+        <button class="btn no-print" onclick="window.print()">Cetak Struk</button>
+        <a href="/pos" class="btn no-print" style="background:#555; margin-top:5px;">Kembali ke Kasir</a>
+    </div>
+</body>
+</html>

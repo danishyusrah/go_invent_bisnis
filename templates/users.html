@@ -1,0 +1,84 @@
+{{ template "header" . }}
+<div class="max-w-5xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Manajemen Karyawan</h2>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="flex flex-col gap-6">
+            <!-- Add User Form -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 h-fit">
+                <div class="px-6 py-5 border-b border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800">Tambah Akun Baru</h3>
+                </div>
+                <form action="/users/new" method="POST" class="p-6 space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">Username</label>
+                        <input type="text" name="username" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">Role</label>
+                        <select name="role" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="staff">Staf (Kasir)</option>
+                            <option value="admin">Admin (Pemilik)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+                        Buat Akun
+                    </button>
+                </form>
+            </div>
+            
+            <!-- System Backup Card -->
+            <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-sm border border-slate-700 h-fit text-white p-6">
+                <h3 class="text-lg font-semibold text-slate-100 mb-2">Auto-Backup Sistem</h3>
+                <p class="text-sm text-slate-400 mb-4">Sistem ini secara otomatis mem-backup seluruh data toko Anda (Produk, Transaksi, Pengeluaran) setiap 24 Jam sekali ke dalam format <b>.zip</b>.</p>
+                <a href="/backup" class="block w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition-colors text-center shadow-lg">
+                    Download Backup Sekarang
+                </a>
+            </div>
+        </div>
+
+        <!-- Users List -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 text-gray-500 text-sm">
+                        <th class="px-6 py-4 font-medium">Username</th>
+                        <th class="px-6 py-4 font-medium">Role</th>
+                        <th class="px-6 py-4 font-medium text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {{ range .Users }}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-6 py-4 font-medium text-gray-800">{{ .Username }}</td>
+                        <td class="px-6 py-4">
+                            {{ if eq .Role "admin" }}
+                            <span class="bg-purple-100 text-purple-700 px-2.5 py-0.5 rounded text-xs font-semibold">Admin</span>
+                            {{ else }}
+                            <span class="bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded text-xs font-semibold">Staff</span>
+                            {{ end }}
+                        </td>
+                        <td class="px-6 py-4 text-right space-x-2 flex justify-end">
+                            <form action="/users/reset/{{ .ID }}" method="POST" onsubmit="return confirm('Reset password ke default (password123)?');">
+                                <button type="submit" class="px-3 py-1 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 rounded text-sm font-medium transition-colors">Reset Pwd</button>
+                            </form>
+                            {{ if ne .ID 1 }}
+                            <form action="/users/delete/{{ .ID }}" method="POST" onsubmit="return confirm('Hapus akun ini permanen?');">
+                                <button type="submit" class="px-3 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded text-sm font-medium transition-colors">Hapus</button>
+                            </form>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{ template "footer" . }}

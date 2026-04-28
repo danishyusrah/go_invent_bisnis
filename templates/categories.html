@@ -1,0 +1,55 @@
+{{ template "header" . }}
+<div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Manajemen Kategori</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Form Tambah Kategori -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 h-fit">
+            <div class="px-6 py-5 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800">Tambah Kategori</h3>
+            </div>
+            <form action="/categories/new" method="POST" class="p-6 space-y-4">
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">Nama Kategori</label>
+                    <input type="text" name="name" required placeholder="Cth: Speaker Aktif" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+                    Simpan Kategori
+                </button>
+            </form>
+        </div>
+
+        <!-- Daftar Kategori -->
+        <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-500 text-sm border-b">
+                        <th class="px-6 py-4 font-medium">Nama Kategori</th>
+                        <th class="px-6 py-4 font-medium text-center w-24">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {{ range .Categories }}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 font-medium text-gray-800">{{ .Name }}</td>
+                        <td class="px-6 py-4 text-center">
+                            {{ if ne .Name "Uncategorized" }}
+                            <form action="/categories/delete/{{ .ID }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kategori ini? (Catatan: Produk yang sudah menggunakan kategori ini tetap akan menampilkan nama kategorinya, tapi opsi ini tidak akan muncul lagi di halaman Edit/Tambah)');">
+                                <button type="submit" class="text-red-500 hover:text-red-700 p-2 bg-red-50 rounded-lg hover:bg-red-100 transition-colors" title="Hapus">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </form>
+                            {{ else }}
+                            <span class="text-xs text-gray-400">Default</span>
+                            {{ end }}
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{ template "footer" . }}

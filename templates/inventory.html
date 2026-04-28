@@ -1,0 +1,170 @@
+{{ template "header" . }}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100">
+    {{ if gt .LowStockCount 0 }}
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg flex items-start">
+        <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-bold text-red-800">Perhatian: Stok Menipis!</h3>
+            <div class="mt-1 text-sm text-red-700">
+                <p>Terdapat <b>{{ .LowStockCount }} jenis produk</b> yang stoknya sudah mencapai batas minimal atau habis. Segera lakukan re-stock.</p>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <h3 class="text-lg font-semibold text-gray-800">Daftar Seluruh Inventaris</h3>
+        
+        <div class="flex space-x-3 w-1/2 justify-end">
+            <form id="searchForm" action="/inventory" method="GET" class="flex-1 max-w-md relative" onsubmit="return false;">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" id="searchInput" name="q" value="{{ .SearchQuery }}" placeholder="Ketik kata kunci... (Live Search)" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition-all" autofocus>
+            </form>
+            {{ if eq .User.Role "admin" }}
+            <a href="/inventory/labels" target="_blank" class="inline-flex items-center px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Cetak Label (Massal)
+            </a>
+            <a href="/product/new" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Tambah Produk
+            </a>
+            {{ end }}
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 text-gray-500 text-sm">
+                    <th class="px-6 py-4 font-medium">Part Number</th>
+                    <th class="px-6 py-4 font-medium">Deskripsi</th>
+                    <th class="px-6 py-4 font-medium">Kategori</th>
+                    <th class="px-6 py-4 font-medium text-right">Stok</th>
+                    <th class="px-6 py-4 font-medium text-right">Min. Stok</th>
+                    <th class="px-6 py-4 font-medium text-right">Harga Modal</th>
+                    <th class="px-6 py-4 font-medium">Lokasi</th>
+                    <th class="px-6 py-4 font-medium text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-gray-100">
+                {{ range .Products }}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 font-medium text-gray-800">{{ .PartNumber }}</td>
+                    <td class="px-6 py-4 text-gray-600 truncate max-w-xs">{{ .Description }}</td>
+                    <td class="px-6 py-4 text-gray-500"><span class="bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded text-xs font-semibold">{{ .Category }}</span></td>
+                    <td class="px-6 py-4 text-right font-semibold {{ if eq .Quantity 0 }}text-red-600{{ else if le .Quantity .MinStockLevel }}text-yellow-600{{ else }}text-green-600{{ end }}">{{ .Quantity }}</td>
+                    <td class="px-6 py-4 text-right text-gray-500">{{ .MinStockLevel }}</td>
+                    <td class="px-6 py-4 text-right text-gray-600">
+                        {{ if eq $.User.Role "admin" }}Rp {{ rupiah .CapitalPrice }}{{ else }}***{{ end }}
+                    </td>
+                    <td class="px-6 py-4 text-gray-500">{{ .Location }}</td>
+                    <td class="px-6 py-4 text-center space-x-2 whitespace-nowrap">
+                        <a href="/product/{{ .ID }}/transaction" class="inline-flex text-emerald-600 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-3 py-2 rounded-lg transition-colors text-xs font-medium" title="Transaksi (In/Out)">
+                            Transaksi
+                        </a>
+                        <a href="/product/qrcode/{{ .ID }}" target="_blank" class="inline-flex text-purple-600 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 p-2 rounded-lg transition-colors" title="Cetak QR Code">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                        </a>
+                        {{ if eq $.User.Role "admin" }}
+                        <a href="/product/edit/{{ .ID }}" class="inline-flex text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition-colors" title="Edit">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </a>
+                        <form action="/product/delete/{{ .ID }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?');">
+                            <button type="submit" class="inline-flex text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" title="Hapus">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </form>
+                        {{ end }}
+                    </td>
+                </tr>
+                {{ else }}
+                <tr>
+                    <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                        Pencarian tidak menemukan hasil.
+                    </td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div id="pagination" class="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+        <span class="text-sm text-gray-600">Halaman {{ .CurrentPage }} dari {{ .TotalPages }} (Total Barang)</span>
+        
+        <div class="flex items-center space-x-1">
+            <!-- First Page -->
+            {{ if gt .CurrentPage 1 }}
+            <a href="?page=1&q={{ .SearchQuery }}" class="px-3 py-1.5 bg-white border border-gray-200 text-gray-500 rounded hover:bg-gray-50 text-sm font-medium transition-colors" title="Ke Awal">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+            </a>
+            <!-- Prev Page -->
+            <a href="?page={{ sub .CurrentPage 1 }}&q={{ .SearchQuery }}" class="px-3 py-1.5 bg-white border border-gray-200 text-gray-500 rounded hover:bg-gray-50 text-sm font-medium transition-colors" title="Sebelumnya">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+            {{ end }}
+
+            <!-- Page Numbers -->
+            {{ $currentPage := .CurrentPage }}
+            {{ $query := .SearchQuery }}
+            {{ range .PageNumbers }}
+                {{ if eq . $currentPage }}
+                <span class="px-3 py-1.5 bg-blue-600 border border-blue-600 text-white rounded text-sm font-bold shadow-sm">{{ . }}</span>
+                {{ else }}
+                <a href="?page={{ . }}&q={{ $query }}" class="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded hover:bg-gray-50 hover:text-blue-600 text-sm font-medium transition-colors">{{ . }}</a>
+                {{ end }}
+            {{ end }}
+
+            <!-- Next Page -->
+            {{ if lt .CurrentPage .TotalPages }}
+            <a href="?page={{ add .CurrentPage 1 }}&q={{ .SearchQuery }}" class="px-3 py-1.5 bg-white border border-gray-200 text-gray-500 rounded hover:bg-gray-50 text-sm font-medium transition-colors" title="Berikutnya">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </a>
+            <!-- Last Page -->
+            <a href="?page={{ .TotalPages }}&q={{ .SearchQuery }}" class="px-3 py-1.5 bg-white border border-gray-200 text-gray-500 rounded hover:bg-gray-50 text-sm font-medium transition-colors" title="Ke Akhir">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+            </a>
+            {{ end }}
+        </div>
+    </div>
+</div>
+
+<script>
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchInput.value) {
+        searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+    }
+
+    let debounceTimer;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        
+        const loaderHtml = `<tr><td colspan="8" class="px-6 py-8 text-center"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><p class="mt-2 text-sm text-gray-500">Mencari Data...</p></td></tr>`;
+        document.getElementById('tableBody').innerHTML = loaderHtml;
+
+        debounceTimer = setTimeout(() => {
+            const query = searchInput.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('q', query);
+            url.searchParams.set('page', 1); 
+            
+            fetch(url)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    document.getElementById('tableBody').innerHTML = doc.getElementById('tableBody').innerHTML;
+                    document.getElementById('pagination').innerHTML = doc.getElementById('pagination').innerHTML;
+                    
+                    window.history.pushState({}, '', url);
+                });
+        }, 300); 
+    });
+</script>
+{{ template "footer" . }}

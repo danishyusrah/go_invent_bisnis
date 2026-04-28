@@ -1,0 +1,245 @@
+{{ template "header" . }}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left: Scanner & Cart -->
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Kasir (Point of Sale)</h3>
+            <div class="flex space-x-4 mb-4">
+                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 flex-1">
+                    <input type="radio" name="transaction_type" value="OUT" class="w-4 h-4 text-emerald-600" checked onchange="updateCartType()">
+                    <span class="ml-2 text-sm font-medium text-emerald-700">Penjualan (OUT)</span>
+                </label>
+                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 flex-1">
+                    <input type="radio" name="transaction_type" value="IN" class="w-4 h-4 text-blue-600" onchange="updateCartType()">
+                    <span class="ml-2 text-sm font-medium text-blue-700">Restock Masuk (IN)</span>
+                </label>
+            </div>
+
+            <form id="scannerForm" class="flex space-x-2">
+                <input type="text" id="scannerInput" placeholder="Scan Barcode / Ketik Part Number lalu Enter..." autofocus required class="flex-1 px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-lg outline-none">
+                <button type="submit" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-900 transition">Tambah</button>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-0 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-500 text-sm">
+                        <th class="px-6 py-4 font-medium">Part Number</th>
+                        <th class="px-6 py-4 font-medium">Deskripsi</th>
+                        <th class="px-6 py-4 font-medium">Harga</th>
+                        <th class="px-6 py-4 font-medium text-center">Qty</th>
+                        <th class="px-6 py-4 font-medium text-right">Subtotal</th>
+                        <th class="px-6 py-4 font-medium text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="cartTableBody" class="divide-y divide-gray-100 text-sm">
+                    <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Keranjang Kosong. Scan barang untuk mulai.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Right: Summary & Checkout -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-fit sticky top-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 border-b pb-4">Ringkasan Transaksi</h3>
+        
+        <div class="space-y-4 mb-6">
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">Catatan (Nama Pembeli / Supplier)</label>
+                <input type="text" id="notesInput" placeholder="Opsional..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            
+            <div class="flex justify-between items-center text-gray-600">
+                <span>Total Item</span>
+                <span id="totalItems" class="font-semibold">0</span>
+            </div>
+            
+            <div class="pt-4 border-t border-dashed border-gray-200">
+                <div class="flex justify-between items-end">
+                    <span class="text-gray-500 font-medium">Grand Total</span>
+                    <span id="grandTotal" class="text-3xl font-bold text-emerald-600">Rp 0</span>
+                </div>
+            </div>
+            
+            <div class="space-y-2 pt-4">
+                <label class="block text-sm font-medium text-gray-700">Bayar / Tunai (Rp)</label>
+                <input type="text" id="cashInput" class="rupiah-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-right text-lg font-semibold" onkeyup="calculateChange()">
+            </div>
+            
+            <div class="flex justify-between items-center text-gray-600 pt-2">
+                <span>Kembalian</span>
+                <span id="changeAmount" class="font-semibold text-lg text-orange-600">Rp 0</span>
+            </div>
+        </div>
+
+        <button id="checkoutBtn" onclick="processCheckout()" disabled class="w-full py-4 text-lg font-bold text-white bg-slate-400 rounded-xl transition-colors shadow-lg flex items-center justify-center">
+            Proses Transaksi
+        </button>
+    </div>
+</div>
+
+<script>
+    let cart = [];
+    
+    function formatMoney(amount) {
+        return amount.toLocaleString('id-ID');
+    }
+
+    function updateCartType() {
+        renderCart();
+    }
+
+    document.getElementById('scannerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const input = document.getElementById('scannerInput');
+        const barcode = input.value.trim();
+        if (!barcode) return;
+
+        fetch('/api/product/' + barcode)
+            .then(res => res.json())
+            .then(data => {
+                if(data.error) {
+                    alert(data.error);
+                } else {
+                    addToCart(data);
+                }
+                input.value = '';
+                input.focus();
+            })
+            .catch(err => {
+                alert("Koneksi error!");
+            });
+    });
+
+    function addToCart(product) {
+        const existingItem = cart.find(i => i.id === product.id);
+        if (existingItem) {
+            existingItem.qty += 1;
+        } else {
+            cart.push({
+                id: product.id,
+                part_number: product.part_number,
+                description: product.description,
+                capital_price: product.capital_price,
+                selling_price: product.selling_price,
+                qty: 1
+            });
+        }
+        renderCart();
+    }
+
+    function updateQty(id, delta) {
+        const item = cart.find(i => i.id === id);
+        if(item) {
+            item.qty += delta;
+            if(item.qty <= 0) {
+                cart = cart.filter(i => i.id !== id);
+            }
+            renderCart();
+        }
+    }
+
+    function calculateChange() {
+        const cashRaw = document.getElementById('cashInput').value.replace(/[^,\d]/g, '');
+        const cash = parseFloat(cashRaw) || 0;
+        let gTotal = 0;
+        
+        const type = document.querySelector('input[name="transaction_type"]:checked').value;
+        cart.forEach(item => {
+            let price = type === 'OUT' ? item.selling_price : item.capital_price;
+            gTotal += price * item.qty;
+        });
+
+        const change = cash - gTotal;
+        document.getElementById('changeAmount').innerText = "Rp " + formatMoney(change < 0 ? 0 : change);
+    }
+
+    function renderCart() {
+        const tbody = document.getElementById('cartTableBody');
+        const type = document.querySelector('input[name="transaction_type"]:checked').value;
+        
+        let html = '';
+        let grandTotal = 0;
+        let totalItems = 0;
+
+        if (cart.length === 0) {
+            html = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Keranjang Kosong. Scan barang untuk mulai.</td></tr>';
+        } else {
+            cart.forEach(item => {
+                let price = type === 'OUT' ? item.selling_price : item.capital_price;
+                let subtotal = price * item.qty;
+                grandTotal += subtotal;
+                totalItems += item.qty;
+
+                html += `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-3 font-medium text-gray-800">${item.part_number}</td>
+                    <td class="px-6 py-3 text-gray-500">${item.description}</td>
+                    <td class="px-6 py-3 text-gray-600">Rp ${formatMoney(price)}</td>
+                    <td class="px-6 py-3 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button type="button" onclick="updateQty(${item.id}, -1)" class="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">-</button>
+                            <span class="w-8 text-center font-medium">${item.qty}</span>
+                            <button type="button" onclick="updateQty(${item.id}, 1)" class="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">+</button>
+                        </div>
+                    </td>
+                    <td class="px-6 py-3 text-right font-medium text-gray-800">Rp ${formatMoney(subtotal)}</td>
+                    <td class="px-6 py-3 text-center">
+                        <button type="button" onclick="updateQty(${item.id}, -${item.qty})" class="text-red-500 hover:text-red-700">Hapus</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        tbody.innerHTML = html;
+        document.getElementById('totalItems').innerText = totalItems;
+        document.getElementById('grandTotal').innerText = "Rp " + formatMoney(grandTotal);
+
+        const btn = document.getElementById('checkoutBtn');
+        if (cart.length > 0) {
+            btn.disabled = false;
+            btn.classList.remove('bg-slate-400');
+            btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+        } else {
+            btn.disabled = true;
+            btn.classList.add('bg-slate-400');
+            btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+        }
+
+        calculateChange();
+    }
+
+    function processCheckout() {
+        if(cart.length === 0) return;
+        const type = document.querySelector('input[name="transaction_type"]:checked').value;
+        const notes = document.getElementById('notesInput').value;
+
+        const payload = {
+            type: type,
+            notes: notes,
+            items: cart.map(i => ({product_id: i.id, qty: i.qty}))
+        };
+
+        document.getElementById('checkoutBtn').disabled = true;
+        document.getElementById('checkoutBtn').innerText = "Memproses...";
+
+        fetch('/pos/checkout', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.error) {
+                alert("Error: " + data.error);
+                document.getElementById('checkoutBtn').disabled = false;
+                document.getElementById('checkoutBtn').innerText = "Proses Transaksi";
+            } else {
+                window.location.href = "/receipt/" + data.receipt_id;
+            }
+        })
+        .catch(err => alert("Gagal memproses transaksi!"));
+    }
+</script>
+{{ template "footer" . }}

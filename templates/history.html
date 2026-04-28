@@ -1,0 +1,38 @@
+{{ template "header" . }}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="px-6 py-5 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-800">Riwayat Transaksi Terakhir</h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 text-gray-500 text-sm">
+                    <th class="px-6 py-4 font-medium">Tanggal</th>
+                    <th class="px-6 py-4 font-medium">Part Number</th>
+                    <th class="px-6 py-4 font-medium">Tipe</th>
+                    <th class="px-6 py-4 font-medium">Qty</th>
+                    <th class="px-6 py-4 font-medium">User</th>
+                    <th class="px-6 py-4 font-medium">Catatan</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-sm">
+                {{ if not .Transactions }}
+                <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Belum ada transaksi.</td></tr>
+                {{ end }}
+                {{ range .Transactions }}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-3 text-gray-500">{{ .Date }}</td>
+                    <td class="px-6 py-3 font-medium text-gray-800">{{ .PartNumber }}</td>
+                    <td class="px-6 py-3 font-bold {{ if eq .TransactionType "IN" }}text-green-600{{ else }}text-red-600{{ end }}">
+                        {{ .TransactionType }}
+                    </td>
+                    <td class="px-6 py-3 font-medium">{{ .Quantity }}</td>
+                    <td class="px-6 py-3 text-gray-600">{{ .Username }}</td>
+                    <td class="px-6 py-3 text-gray-500 max-w-xs truncate">{{ .Notes }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{ template "footer" . }}

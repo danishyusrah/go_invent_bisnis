@@ -1,0 +1,107 @@
+{{ template "header" . }}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Stat Card 1 -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Total SKU Aktif</p>
+                <p class="text-3xl font-bold text-gray-800 mt-1">{{ .TotalSKU }}</p>
+            </div>
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Card 2 -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Stok Habis</p>
+                <p class="text-3xl font-bold text-red-600 mt-1">{{ .OutOfStock }}</p>
+            </div>
+            <div class="p-3 bg-red-50 text-red-600 rounded-lg">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Card 3 -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Peringatan Stok Rendah</p>
+                <p class="text-3xl font-bold text-yellow-600 mt-1">{{ .LowStock }}</p>
+            </div>
+            <div class="p-3 bg-yellow-50 text-yellow-600 rounded-lg">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Card 4 -->
+    {{ if eq .User.Role "admin" }}
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Nilai Inventaris</p>
+                <p class="text-2xl font-bold text-emerald-600 mt-1">Rp {{ rupiah .TotalValue }}</p>
+            </div>
+            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+</div>
+
+<!-- Critical Stock Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800">Tabel Stok Kritis</h3>
+        <div class="space-x-3">
+            <a href="/export/po" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                Export PO (CSV)
+            </a>
+            <a href="/inventory" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Lihat Semua</a>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 text-gray-500 text-sm">
+                    <th class="px-6 py-4 font-medium">Part Number</th>
+                    <th class="px-6 py-4 font-medium">Deskripsi</th>
+                    <th class="px-6 py-4 font-medium">Stok</th>
+                    <th class="px-6 py-4 font-medium">Min. Stok</th>
+                    <th class="px-6 py-4 font-medium">Lokasi</th>
+                    <th class="px-6 py-4 font-medium text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {{ if not .CriticalProducts }}
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">Tidak ada stok kritis saat ini.</td>
+                </tr>
+                {{ end }}
+                {{ range .CriticalProducts }}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 font-medium text-gray-800">{{ .PartNumber }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ .Description }}</td>
+                    <td class="px-6 py-4 font-bold {{ if eq .Quantity 0 }}text-red-600{{ else }}text-yellow-600{{ end }}">{{ .Quantity }}</td>
+                    <td class="px-6 py-4 text-gray-500">{{ .MinStockLevel }}</td>
+                    <td class="px-6 py-4 text-gray-500">{{ .Location }}</td>
+                    <td class="px-6 py-4 text-center">
+                        {{ if eq .Quantity 0 }}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Habis</span>
+                        {{ else }}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Rendah</span>
+                        {{ end }}
+                    </td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+</div>
+{{ template "footer" . }}
