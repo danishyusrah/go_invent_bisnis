@@ -6,105 +6,97 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>{{ .Title }} - {{ StoreName }}</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Nunito Sans', 'sans-serif'], heading: ['Rubik', 'sans-serif'] },
                     colors: {
-                        primary: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        }
+                        primary: { 50: '#fff8f6', 100: '#fff0ed', 200: '#ffd9d0', 300: '#ffb8a6', 400: '#ff8a6e', 500: '#ff5722', 600: '#EE4D2D', 700: '#d43b1f', 800: '#b02e16', 900: '#8a220f' },
+                        accent: { 50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa', 300: '#fdba74', 400: '#fb923c', 500: '#F97316', 600: '#ea580c', 700: '#c2410c' },
                     }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Nunito Sans', sans-serif; background-color: #f8fafc; }
+        .font-heading { font-family: 'Rubik', sans-serif; }
         .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        
-        /* Smooth Scrollbar */
+        .material-symbols-outlined.outline { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Glassmorphism Header */
-        .glass-header {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
+        ::-webkit-scrollbar-thumb { background: #fed7aa; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #fdba74; }
+        .glass-header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid #fff0ed; }
+        .sidebar-gradient { background: linear-gradient(180deg, #fff8f6 0%, #fff0ed 100%); }
+        .nav-link { transition: all 0.2s ease; }
+        .nav-link:hover { transform: translateX(2px); }
+        .card-hover { transition: all 0.3s ease; cursor: pointer; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(238,77,45,0.15); }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex">
 
 <!-- Desktop Sidebar -->
-<aside class="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-white border-r border-slate-200 z-40">
-    <div class="h-16 flex items-center px-6 border-b border-slate-100">
+<aside class="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 sidebar-gradient border-r border-primary-100 z-40">
+    <div class="h-16 flex items-center px-5 border-b border-primary-100">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-primary-600 text-white flex items-center justify-center shadow-md shadow-primary-500/30">
-                <span class="material-symbols-outlined text-sm">speaker</span>
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 text-white flex items-center justify-center shadow-lg shadow-primary-500/30">
+                <span class="material-symbols-outlined text-base">inventory_2</span>
             </div>
-            <h1 class="font-bold text-slate-900 tracking-tight text-lg">{{ StoreName }}</h1>
+            <h1 class="font-heading font-bold text-primary-900 tracking-tight">{{ StoreName }}</h1>
         </div>
     </div>
-    
-    <div class="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
-        <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-2">Menu Utama</p>
-        
-        <a href="/" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ if eq .ActiveMenu "dashboard" }}bg-primary-50 text-primary-700{{ else }}text-slate-600 hover:bg-slate-50 hover:text-slate-900{{ end }}">
-            <span class="material-symbols-outlined text-[20px] mr-3 {{ if eq .ActiveMenu "dashboard" }}text-primary-600{{ else }}text-slate-400{{ end }}">dashboard</span>
+
+    <div class="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-0.5">
+        <p class="px-3 text-xs font-semibold text-primary-400 uppercase tracking-wider mb-2">Menu Utama</p>
+
+        <a href="/" class="nav-link flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ if eq .ActiveMenu "dashboard" }}bg-primary-600 text-white shadow-md shadow-primary-500/30{{ else }}text-slate-600 hover:bg-white/80 hover:text-primary-700{{ end }}">
+            <span class="material-symbols-outlined {{ if eq .ActiveMenu "dashboard" }}text-white{{ else }}text-slate-400{{ end }} text-[20px] mr-3">dashboard</span>
             Dashboard
         </a>
 
-        <a href="/pos" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ if eq .ActiveMenu "pos" }}bg-primary-50 text-primary-700{{ else }}text-slate-600 hover:bg-slate-50 hover:text-slate-900{{ end }}">
-            <span class="material-symbols-outlined text-[20px] mr-3 {{ if eq .ActiveMenu "pos" }}text-primary-600{{ else }}text-slate-400{{ end }}">point_of_sale</span>
+        <a href="/pos" class="nav-link flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ if eq .ActiveMenu "pos" }}bg-primary-600 text-white shadow-md shadow-primary-500/30{{ else }}text-slate-600 hover:bg-white/80 hover:text-primary-700{{ end }}">
+            <span class="material-symbols-outlined {{ if eq .ActiveMenu "pos" }}text-white{{ else }}text-slate-400{{ end }} text-[20px] mr-3">point_of_sale</span>
             Kasir (POS)
         </a>
-        
-        <a href="/inventory" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ if eq .ActiveMenu "inventory" }}bg-primary-50 text-primary-700{{ else }}text-slate-600 hover:bg-slate-50 hover:text-slate-900{{ end }}">
-            <span class="material-symbols-outlined text-[20px] mr-3 {{ if eq .ActiveMenu "inventory" }}text-primary-600{{ else }}text-slate-400{{ end }}">inventory_2</span>
+
+        <a href="/inventory" class="nav-link flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ if eq .ActiveMenu "inventory" }}bg-primary-600 text-white shadow-md shadow-primary-500/30{{ else }}text-slate-600 hover:bg-white/80 hover:text-primary-700{{ end }}">
+            <span class="material-symbols-outlined {{ if eq .ActiveMenu "inventory" }}text-white{{ else }}text-slate-400{{ end }} text-[20px] mr-3">inventory_2</span>
             Gudang & Inventaris
         </a>
 
-        <a href="/history" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ if eq .ActiveMenu "history" }}bg-primary-50 text-primary-700{{ else }}text-slate-600 hover:bg-slate-50 hover:text-slate-900{{ end }}">
-            <span class="material-symbols-outlined text-[20px] mr-3 {{ if eq .ActiveMenu "history" }}text-primary-600{{ else }}text-slate-400{{ end }}">history</span>
+        <a href="/history" class="nav-link flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ if eq .ActiveMenu "history" }}bg-primary-600 text-white shadow-md shadow-primary-500/30{{ else }}text-slate-600 hover:bg-white/80 hover:text-primary-700{{ end }}">
+            <span class="material-symbols-outlined {{ if eq .ActiveMenu "history" }}text-white{{ else }}text-slate-400{{ end }} text-[20px] mr-3">history</span>
             Riwayat Transaksi
         </a>
 
         {{ if eq .User.Role "admin" }}
-        <p class="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-6">Administrator</p>
+        <p class="px-3 text-xs font-semibold text-primary-400 uppercase tracking-wider mb-2 mt-5">Administrator</p>
 
-        <a href="/categories" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ if eq .ActiveMenu "categories" }}bg-primary-50 text-primary-700{{ else }}text-slate-600 hover:bg-slate-50 hover:text-slate-900{{ end }}">
-            <span class="material-symbols-outlined text-[20px] mr-3 {{ if eq .ActiveMenu "categories" }}text-primary-600{{ else }}text-slate-400{{ end }}">category</span>
+        <a href="/categories" class="nav-link flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ if eq .ActiveMenu "categories" }}bg-primary-600 text-white shadow-md shadow-primary-500/30{{ else }}text-slate-600 hover:bg-white/80 hover:text-primary-700{{ end }}">
+            <span class="material-symbols-outlined {{ if eq .ActiveMenu "categories" }}text-white{{ else }}text-slate-400{{ end }} text-[20px] mr-3">category</span>
             Kategori Produk
         </a>
 
-        <a href="/accounting" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ if eq .ActiveMenu "accounting" }}bg-primary-50 text-primary-700{{ else }}text-slate-600 hover:bg-slate-50 hover:text-slate-900{{ end }}">
-            <span class="material-symbols-outlined text-[20px] mr-3 {{ if eq .ActiveMenu "accounting" }}text-primary-600{{ else }}text-slate-400{{ end }}">analytics</span>
+        <a href="/accounting" class="nav-link flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ if eq .ActiveMenu "accounting" }}bg-primary-600 text-white shadow-md shadow-primary-500/30{{ else }}text-slate-600 hover:bg-white/80 hover:text-primary-700{{ end }}">
+            <span class="material-symbols-outlined {{ if eq .ActiveMenu "accounting" }}text-white{{ else }}text-slate-400{{ end }} text-[20px] mr-3">analytics</span>
             Laporan Akuntansi
         </a>
-        
-        <a href="/users" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ if eq .ActiveMenu "users" }}bg-primary-50 text-primary-700{{ else }}text-slate-600 hover:bg-slate-50 hover:text-slate-900{{ end }}">
-            <span class="material-symbols-outlined text-[20px] mr-3 {{ if eq .ActiveMenu "users" }}text-primary-600{{ else }}text-slate-400{{ end }}">group</span>
+
+        <a href="/users" class="nav-link flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ if eq .ActiveMenu "users" }}bg-primary-600 text-white shadow-md shadow-primary-500/30{{ else }}text-slate-600 hover:bg-white/80 hover:text-primary-700{{ end }}">
+            <span class="material-symbols-outlined {{ if eq .ActiveMenu "users" }}text-white{{ else }}text-slate-400{{ end }} text-[20px] mr-3">group</span>
             Manajemen Karyawan
         </a>
         {{ end }}
     </div>
-    
-    <div class="p-4 border-t border-slate-200 bg-slate-50">
-        <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
+
+    <div class="p-4 border-t border-primary-100 bg-white/60">
+        <div class="flex items-center gap-3 mb-3 px-1">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-sm shadow-md">
                 {{ slice .User.Username 0 1 }}
             </div>
             <div>
@@ -112,8 +104,8 @@
                 <p class="text-xs text-slate-500 capitalize">{{ .User.Role }}</p>
             </div>
         </div>
-        <a href="/logout" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
-            <span class="material-symbols-outlined text-[18px]">logout</span>
+        <a href="/logout" class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-base">logout</span>
             Keluar
         </a>
     </div>
@@ -121,38 +113,50 @@
 
 <!-- Main Wrapper -->
 <div class="flex-1 md:ml-64 flex flex-col min-h-screen">
-    
+
     <!-- Top Header -->
-    <header class="h-16 glass-header border-b border-slate-200 sticky top-0 z-30 px-6 flex items-center justify-between">
-        <div>
-            <h2 class="text-xl font-semibold text-slate-800">{{ .Title }}</h2>
+    <header class="h-16 glass-header sticky top-0 z-30 px-4 md:px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 text-white flex items-center justify-center shadow-lg shadow-primary-500/20 md:hidden">
+                <span class="material-symbols-outlined text-base">inventory_2</span>
+            </div>
+            <h2 class="font-heading text-lg md:text-xl font-semibold text-slate-800">{{ .Title }}</h2>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="hidden md:block text-sm text-slate-500">
-                {{ StoreName }} ERP System
+
+        <div class="flex items-center gap-3">
+            <!-- Profile Dropdown -->
+            <div class="relative">
+                <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="flex items-center gap-2 px-3 py-2 bg-white border border-primary-100 rounded-xl hover:shadow-md transition-all cursor-pointer">
+                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                        {{ slice .User.Username 0 1 }}
+                    </div>
+                    <span class="text-sm font-medium text-slate-700 hidden sm:block capitalize">{{ .User.Username }}</span>
+                    <span class="material-symbols-outlined text-sm text-slate-400">arrow_drop_down</span>
+                </button>
+                <div class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-primary-100 py-2 z-50">
+                    <div class="px-4 py-2 border-b border-primary-100">
+                        <p class="text-sm font-semibold text-slate-900 capitalize">{{ .User.Username }}</p>
+                        <p class="text-xs text-slate-500 capitalize">{{ .User.Role }}</p>
+                    </div>
+                    <button onclick="document.getElementById('changePasswordModal').classList.remove('hidden')" class="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-primary-50 flex items-center gap-3 transition-colors cursor-pointer">
+                        <span class="material-symbols-outlined text-lg text-slate-400">lock</span>
+                        Ganti Password
+                    </button>
+                    <a href="/logout" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                        <span class="material-symbols-outlined text-lg">logout</span>
+                        Keluar
+                    </a>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Mobile Header & Nav (Visible only on small screens) -->
-    <div class="md:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-primary-600 text-white flex items-center justify-center">
-                <span class="material-symbols-outlined text-sm">speaker</span>
-            </div>
-            <h1 class="font-bold text-slate-900">{{ StoreName }}</h1>
-        </div>
-        <a href="/logout" class="text-red-500 p-2 bg-red-50 rounded-lg">
-            <span class="material-symbols-outlined">logout</span>
-        </a>
-    </div>
-
     <!-- Page Content -->
-    <main class="flex-1 p-6 max-w-7xl mx-auto w-full mb-20 md:mb-0">
+    <main class="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full mb-20 md:mb-0">
         <!-- Flash Messages -->
         {{ range .Flashes }}
-        <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3 shadow-sm">
-            <span class="material-symbols-outlined">info</span>
+        <div class="flex items-center gap-3 bg-primary-50 border border-primary-200 text-primary-700 px-4 py-3 rounded-xl mb-6 shadow-sm">
+            <span class="material-symbols-outlined text-primary-500">info</span>
             <span class="text-sm font-medium">{{ . }}</span>
         </div>
         {{ end }}
@@ -162,47 +166,87 @@
     </main>
 </div>
 
+<!-- Change Password Modal -->
+<div id="changePasswordModal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-heading text-lg font-semibold text-slate-900">Ganti Password</h3>
+            <button onclick="document.getElementById('changePasswordModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form action="/change-password" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Password Lama</label>
+                <input type="password" name="old_password" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Password Baru</label>
+                <input type="password" name="new_password" required minlength="6" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Konfirmasi Password</label>
+                <input type="password" name="confirm_password" required minlength="6" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none">
+            </div>
+            <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold rounded-xl transition-all shadow-lg cursor-pointer">Simpan Password</button>
+        </form>
+    </div>
+</div>
+
 <!-- Mobile Bottom Navigation -->
-<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe z-50">
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-primary-100 pb-safe z-50 shadow-2xl">
     <div class="flex justify-around items-center h-16">
         <a href="/pos" class="flex flex-col items-center justify-center w-full h-full {{ if eq .ActiveMenu "pos" }}text-primary-600{{ else }}text-slate-400{{ end }}">
             <span class="material-symbols-outlined text-xl">point_of_sale</span>
-            <span class="text-[10px] font-medium mt-1">Kasir</span>
+            <span class="text-[10px] font-medium mt-0.5">Kasir</span>
         </a>
         <a href="/inventory" class="flex flex-col items-center justify-center w-full h-full {{ if eq .ActiveMenu "inventory" }}text-primary-600{{ else }}text-slate-400{{ end }}">
             <span class="material-symbols-outlined text-xl">inventory_2</span>
-            <span class="text-[10px] font-medium mt-1">Gudang</span>
+            <span class="text-[10px] font-medium mt-0.5">Gudang</span>
+        </a>
+        <a href="/history" class="flex flex-col items-center justify-center w-full h-full {{ if eq .ActiveMenu "history" }}text-primary-600{{ else }}text-slate-400{{ end }}">
+            <span class="material-symbols-outlined text-xl">history</span>
+            <span class="text-[10px] font-medium mt-0.5">Riwayat</span>
         </a>
         {{ if eq .User.Role "admin" }}
         <a href="/accounting" class="flex flex-col items-center justify-center w-full h-full {{ if eq .ActiveMenu "accounting" }}text-primary-600{{ else }}text-slate-400{{ end }}">
             <span class="material-symbols-outlined text-xl">analytics</span>
-            <span class="text-[10px] font-medium mt-1">Akunting</span>
+            <span class="text-[10px] font-medium mt-0.5">Akunting</span>
         </a>
         <a href="/users" class="flex flex-col items-center justify-center w-full h-full {{ if eq .ActiveMenu "users" }}text-primary-600{{ else }}text-slate-400{{ end }}">
             <span class="material-symbols-outlined text-xl">group</span>
-            <span class="text-[10px] font-medium mt-1">Admin</span>
+            <span class="text-[10px] font-medium mt-0.5">Admin</span>
         </a>
         {{ end }}
     </div>
 </nav>
 
-<!-- Rupiah Formatter Script -->
+<!-- Scripts -->
+<script>
+    // Close dropdowns on outside click
+    document.addEventListener('click', function(e) {
+        document.querySelectorAll('.relative > div.hidden').forEach(dropdown => {
+            if (!dropdown.classList.contains('hidden') && !dropdown.previousElementSibling.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    });
+</script>
+
+<!-- Rupiah Formatter -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const rupiahInputs = document.querySelectorAll('.rupiah-input');
-        rupiahInputs.forEach(input => {
+        document.querySelectorAll('.rupiah-input').forEach(input => {
             input.addEventListener('keyup', function(e) {
                 let val = this.value.replace(/[^,\d]/g, '').toString();
                 let split = val.split(',');
                 let sisa = split[0].length % 3;
                 let rupiah = split[0].substr(0, sisa);
                 let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-                
                 if (ribuan) {
                     let separator = sisa ? '.' : '';
                     rupiah += separator + ribuan.join('.');
                 }
-                
                 rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
                 this.value = rupiah;
             });

@@ -1,62 +1,65 @@
 {{ template "header" . }}
-<div class="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-    <h3 class="text-xl font-semibold text-gray-800 mb-6 border-b pb-4">Tambah Produk Baru</h3>
-    
-    <form action="/product/new" method="POST" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-2">
-                <label for="part_number" class="block text-sm font-medium text-gray-700">Part Number</label>
-                <input type="text" name="part_number" id="part_number" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-sm border border-primary-100 p-6 md:p-8">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="p-2.5 rounded-xl bg-gradient-to-br from-primary-100 to-primary-50 text-primary-600">
+                <span class="material-symbols-outlined text-2xl">add_box</span>
             </div>
-            
-            <div class="space-y-2">
-                <label for="location" class="block text-sm font-medium text-gray-700">Lokasi / Rak</label>
-                <input type="text" name="location" id="location" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+            <div>
+                <h3 class="font-heading text-lg font-semibold text-slate-900">Tambah Produk Baru</h3>
+                <p class="text-sm text-slate-500">Isi form berikut untuk menambah produk</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-2">
-                <label for="description" class="block text-sm font-medium text-gray-700">Deskripsi</label>
-                <textarea name="description" id="description" rows="3" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"></textarea>
+        <form action="/product/new" method="POST" class="space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Part Number <span class="text-red-500">*</span></label>
+                    <input type="text" name="part_number" required placeholder="cth: DNE-AMP-001" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Kategori</label>
+                    <select name="category" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none">
+                        {{ range .Categories }}
+                        <option value="{{ .Name }}">{{ .Name }}</option>
+                        {{ end }}
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Deskripsi</label>
+                    <textarea name="description" rows="2" placeholder="Deskripsi produk" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Stok Awal</label>
+                    <input type="number" name="quantity" value="0" min="0" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Min. Level Stok</label>
+                    <input type="number" name="min_stock_level" value="1" min="0" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Harga Modal (Rp)</label>
+                    <input type="text" name="capital_price" class="rupiah-input w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="0">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Harga Jual (Rp)</label>
+                    <input type="text" name="selling_price" class="rupiah-input w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none" placeholder="0">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Lokasi</label>
+                    <input type="text" name="location" placeholder="cth: Rak-A1" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none">
+                </div>
             </div>
-            
-            <div class="space-y-2">
-                <label for="category" class="block text-sm font-medium text-gray-700">Kategori</label>
-                <select name="category" id="category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
-                    {{ range .Categories }}
-                    <option value="{{ .Name }}">{{ .Name }}</option>
-                    {{ end }}
-                </select>
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
+                <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-medium rounded-xl transition-all shadow-lg shadow-primary-500/25 flex items-center gap-2 cursor-pointer">
+                    <span class="material-symbols-outlined text-lg">save</span>
+                    Simpan Produk
+                </button>
+                <a href="/inventory" class="px-6 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl transition-all text-center cursor-pointer">Batal</a>
             </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div class="space-y-2">
-                <label for="quantity" class="block text-sm font-medium text-gray-700">Stok Awal</label>
-                <input type="number" name="quantity" id="quantity" value="0" required min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
-            </div>
-
-            <div class="space-y-2">
-                <label for="min_stock_level" class="block text-sm font-medium text-gray-700">Minimal Stok</label>
-                <input type="number" name="min_stock_level" id="min_stock_level" required min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
-            </div>
-
-            <div class="space-y-2">
-                <label for="capital_price" class="block text-sm font-medium text-gray-700">Harga Modal (Rp)</label>
-                <input type="text" name="capital_price" id="capital_price" required class="rupiah-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
-            </div>
-
-            <div class="space-y-2">
-                <label for="selling_price" class="block text-sm font-medium text-gray-700">Harga Jual (Rp)</label>
-                <input type="text" name="selling_price" id="selling_price" required class="rupiah-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
-            </div>
-        </div>
-
-        <div class="pt-6 flex items-center justify-end space-x-4 border-t border-gray-100">
-            <a href="/inventory" class="px-6 py-2.5 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">Batal</a>
-            <button type="submit" class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm">Simpan Produk</button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
+
 {{ template "footer" . }}

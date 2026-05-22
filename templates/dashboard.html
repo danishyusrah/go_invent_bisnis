@@ -1,101 +1,113 @@
 {{ template "header" . }}
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- Stat Card 1 -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+    <div class="card-hover bg-white rounded-2xl shadow-sm border border-primary-100 p-5 md:p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Total SKU Aktif</p>
-                <p class="text-3xl font-bold text-gray-800 mt-1">{{ .TotalSKU }}</p>
+                <p class="text-sm font-medium text-slate-500">Total SKU Aktif</p>
+                <p class="font-heading text-2xl md:text-3xl font-bold text-slate-900 mt-1">{{ .TotalSKU }}</p>
             </div>
-            <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <div class="p-3 rounded-xl bg-gradient-to-br from-primary-100 to-primary-50 text-primary-600">
+                <span class="material-symbols-outlined text-2xl">inventory</span>
             </div>
         </div>
+        <div class="mt-2 text-xs text-slate-400">Total semua produk dalam sistem</div>
     </div>
 
-    <!-- Stat Card 2 -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <div class="card-hover bg-white rounded-2xl shadow-sm border border-red-100 p-5 md:p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Stok Habis</p>
-                <p class="text-3xl font-bold text-red-600 mt-1">{{ .OutOfStock }}</p>
+                <p class="text-sm font-medium text-slate-500">Stok Habis</p>
+                <p class="font-heading text-2xl md:text-3xl font-bold text-red-600 mt-1">{{ .OutOfStock }}</p>
             </div>
-            <div class="p-3 bg-red-50 text-red-600 rounded-lg">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <div class="p-3 rounded-xl bg-gradient-to-br from-red-100 to-red-50 text-red-500">
+                <span class="material-symbols-outlined text-2xl">block</span>
             </div>
         </div>
+        <div class="mt-2 text-xs text-slate-400">Produk dengan quantity 0</div>
     </div>
 
-    <!-- Stat Card 3 -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <div class="card-hover bg-white rounded-2xl shadow-sm border border-yellow-100 p-5 md:p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Peringatan Stok Rendah</p>
-                <p class="text-3xl font-bold text-yellow-600 mt-1">{{ .LowStock }}</p>
+                <p class="text-sm font-medium text-slate-500">Stok Rendah</p>
+                <p class="font-heading text-2xl md:text-3xl font-bold text-yellow-600 mt-1">{{ .LowStock }}</p>
             </div>
-            <div class="p-3 bg-yellow-50 text-yellow-600 rounded-lg">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div class="p-3 rounded-xl bg-gradient-to-br from-yellow-100 to-yellow-50 text-yellow-500">
+                <span class="material-symbols-outlined text-2xl">warning</span>
             </div>
         </div>
+        <div class="mt-2 text-xs text-slate-400">Stok di bawah batas minimum</div>
     </div>
 
-    <!-- Stat Card 4 -->
     {{ if eq .User.Role "admin" }}
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <div class="card-hover bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 md:p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500">Nilai Inventaris</p>
-                <p class="text-2xl font-bold text-emerald-600 mt-1">Rp {{ rupiah .TotalValue }}</p>
+                <p class="text-sm font-medium text-slate-500">Nilai Inventaris</p>
+                <p class="font-heading text-xl md:text-2xl font-bold text-emerald-600 mt-1">Rp {{ rupiah .TotalValue }}</p>
             </div>
-            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div class="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-500">
+                <span class="material-symbols-outlined text-2xl">payments</span>
             </div>
         </div>
+        <div class="mt-2 text-xs text-slate-400">Total nilai modal seluruh stok</div>
     </div>
     {{ end }}
 </div>
 
-<!-- Critical Stock Table -->
-<div class="bg-white rounded-xl shadow-sm border border-gray-100">
-    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
-        <h3 class="text-lg font-semibold text-gray-800">Tabel Stok Kritis</h3>
-        <div class="space-x-3">
-            <a href="/export/po" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                Export PO (CSV)
+<!-- Critical Stock -->
+<div class="bg-white rounded-2xl shadow-sm border border-primary-100 overflow-hidden">
+    <div class="px-5 md:px-6 py-5 border-b border-primary-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+            <h3 class="font-heading text-lg font-semibold text-slate-900">Stok Kritis</h3>
+            <p class="text-sm text-slate-500 mt-0.5">Produk yang membutuhkan restock segera</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="/export/po" class="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-sm font-medium rounded-xl transition-all shadow-md cursor-pointer">
+                <span class="material-symbols-outlined text-sm">download</span>
+                Export PO
             </a>
-            <a href="/inventory" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Lihat Semua</a>
+            <a href="/inventory" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-xl transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                Lihat
+            </a>
         </div>
     </div>
     <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left">
             <thead>
-                <tr class="bg-gray-50 text-gray-500 text-sm">
-                    <th class="px-6 py-4 font-medium">Part Number</th>
-                    <th class="px-6 py-4 font-medium">Deskripsi</th>
-                    <th class="px-6 py-4 font-medium">Stok</th>
-                    <th class="px-6 py-4 font-medium">Min. Stok</th>
-                    <th class="px-6 py-4 font-medium">Lokasi</th>
-                    <th class="px-6 py-4 font-medium text-center">Status</th>
+                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                    <th class="px-5 md:px-6 py-4 font-semibold">Part Number</th>
+                    <th class="px-5 md:px-6 py-4 font-semibold">Deskripsi</th>
+                    <th class="px-5 md:px-6 py-4 font-semibold">Stok</th>
+                    <th class="px-5 md:px-6 py-4 font-semibold">Min. Stok</th>
+                    <th class="px-5 md:px-6 py-4 font-semibold">Lokasi</th>
+                    <th class="px-5 md:px-6 py-4 font-semibold text-center">Status</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody class="divide-y divide-slate-100">
                 {{ if not .CriticalProducts }}
                 <tr>
-                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">Tidak ada stok kritis saat ini.</td>
+                    <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                        <span class="material-symbols-outlined text-3xl block mb-2">check_circle</span>
+                        <p>Tidak ada stok kritis.</p>
+                    </td>
                 </tr>
                 {{ end }}
                 {{ range .CriticalProducts }}
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 font-medium text-gray-800">{{ .PartNumber }}</td>
-                    <td class="px-6 py-4 text-gray-600">{{ .Description }}</td>
-                    <td class="px-6 py-4 font-bold {{ if eq .Quantity 0 }}text-red-600{{ else }}text-yellow-600{{ end }}">{{ .Quantity }}</td>
-                    <td class="px-6 py-4 text-gray-500">{{ .MinStockLevel }}</td>
-                    <td class="px-6 py-4 text-gray-500">{{ .Location }}</td>
-                    <td class="px-6 py-4 text-center">
+                <tr class="hover:bg-primary-50/50 transition-colors cursor-pointer">
+                    <td class="px-5 md:px-6 py-4 font-medium text-slate-900">{{ .PartNumber }}</td>
+                    <td class="px-5 md:px-6 py-4 text-slate-600 max-w-xs truncate">{{ .Description }}</td>
+                    <td class="px-5 md:px-6 py-4 font-bold {{ if eq .Quantity 0 }}text-red-600{{ else }}text-yellow-600{{ end }}">{{ .Quantity }}</td>
+                    <td class="px-5 md:px-6 py-4 text-slate-500">{{ .MinStockLevel }}</td>
+                    <td class="px-5 md:px-6 py-4 text-slate-500">{{ .Location }}</td>
+                    <td class="px-5 md:px-6 py-4 text-center">
                         {{ if eq .Quantity 0 }}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Habis</span>
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Habis</span>
                         {{ else }}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Rendah</span>
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700"><span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span> Rendah</span>
                         {{ end }}
                     </td>
                 </tr>
@@ -104,4 +116,5 @@
         </table>
     </div>
 </div>
+
 {{ template "footer" . }}

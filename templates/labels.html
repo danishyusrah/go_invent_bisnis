@@ -1,34 +1,32 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Massal Barcode Stiker</title>
-    <style>
-        body { font-family: sans-serif; background: #eee; margin: 0; padding: 20px; }
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, 40mm); gap: 5mm; justify-content: center; }
-        .label { background: #fff; width: 40mm; height: 30mm; border: 1px dashed #ccc; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2mm; box-sizing: border-box; text-align: center; overflow: hidden;}
-        .label h4 { margin: 0; font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-        .label p { margin: 2px 0 0; font-size: 8px; font-weight: bold; }
-        .label img { max-width: 100%; max-height: 20mm; display: block; margin-top: 2px; }
-        @media print {
-            body { background: #fff; padding: 0; margin: 0; }
-            .no-print { display: none; }
-            .label { border: none; }
-        }
-        .btn { display: block; padding: 10px 20px; background: #000; color: #fff; text-decoration: none; border-radius: 5px; margin-bottom: 20px; width: max-content; margin-left: auto; margin-right: auto; }
-    </style>
-</head>
-<body>
-    <button class="btn no-print" onclick="window.print()">Cetak Label ke Printer Barcode / Stiker</button>
-    <div class="grid-container">
+{{ template "header" . }}
+
+<div class="bg-white rounded-2xl shadow-sm border border-primary-100 p-5 md:p-6">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h3 class="font-heading text-lg font-semibold text-slate-900">Cetak Label QR Code</h3>
+            <p class="text-sm text-slate-500">{{ len .Products }} produk terbaru</p>
+        </div>
+        <button onclick="window.print()" class="px-5 py-2.5 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-medium rounded-xl transition-all shadow-lg flex items-center gap-2 cursor-pointer">
+            <span class="material-symbols-outlined text-lg">print</span> Cetak
+        </button>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {{ range .Products }}
-        <div class="label">
-            <h4>{{ .Description }}</h4>
-            <img src="/product/qrcode/{{ .ID }}" alt="Barcode">
-            <p>{{ .PartNumber }}</p>
+        <div class="border border-slate-200 rounded-xl p-4 text-center bg-slate-50">
+            <img src="/product/qrcode/{{ .ID }}" alt="QR {{ .PartNumber }}" class="w-32 h-32 mx-auto mb-3">
+            <p class="font-medium text-sm text-slate-900">{{ .PartNumber }}</p>
+            <p class="text-xs text-slate-500 mt-1 truncate">{{ .Description }}</p>
         </div>
         {{ end }}
     </div>
-</body>
-</html>
+</div>
+
+<style media="print">
+    body * { visibility: hidden; }
+    .grid, .grid * { visibility: visible; }
+    .grid { position: absolute; left: 0; top: 0; width: 100%; }
+    header, nav, button, .flex.justify-between { display: none !important; }
+</style>
+
+{{ template "footer" . }}

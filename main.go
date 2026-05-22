@@ -170,6 +170,16 @@ func initDB() {
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		name VARCHAR(100) NOT NULL UNIQUE
 	);`
+	schema5 := `
+	CREATE TABLE IF NOT EXISTS activity_logs (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		user_id INT NOT NULL,
+		username VARCHAR(50) NOT NULL,
+		action VARCHAR(100) NOT NULL,
+		details TEXT,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	);`
 
 	_, err1 := db.Exec(schema1)
 	if err1 != nil { log.Printf("Error creating users table: %v", err1) }
@@ -179,6 +189,8 @@ func initDB() {
 	if err3 != nil { log.Printf("Error creating expenses table: %v", err3) }
 	_, err4 := db.Exec(schema4)
 	if err4 != nil { log.Printf("Error creating categories table: %v", err4) }
+	_, err5 := db.Exec(schema5)
+	if err5 != nil { log.Printf("Error creating activity_logs table: %v", err5) }
 
 	var catCount int
 	db.QueryRow("SELECT COUNT(*) FROM categories").Scan(&catCount)
@@ -267,6 +279,8 @@ func main() {
 		// POS & APIs
 		auth.GET("/pos", posGetHandler)
 		auth.GET("/api/product/:part_number", apiGetProductHandler)
+		auth.GET("/api/product/_categories", apiCategoriesHandler)
+		auth.GET("/api/products/search", apiSearchProductsHandler)
 		auth.POST("/pos/checkout", posCheckoutHandler)
 		auth.GET("/receipt/:receipt_id", receiptHandler)
 		auth.GET("/inventory/labels", printLabelsHandler)
@@ -274,6 +288,8 @@ func main() {
 		auth.GET("/accounting", accountingHandler)
 		auth.POST("/accounting/expense", expensePostHandler)
 		auth.GET("/accounting/export", exportPnlHandler)
+		auth.GET("/export/po", exportPOHandler)
+		auth.POST("/change-password", changePasswordHandler)
 
 		// Admin Only Routes
 		admin := auth.Group("/")
@@ -345,6 +361,10 @@ func funcMap() template.FuncMap {
 		},
 	}
 }
+func logActivity(userID int, username, action, details string) {
+	db.Exec("INSERT INTO activity_logs (user_id, username, action, details) VALUES (?, ?, ?, ?)", userID, username, action, details)
+}
+
 func getFlashes(c *gin.Context) []interface{} {
 	session := sessions.Default(c)
 	flashes := session.Flashes()
@@ -412,8 +432,13 @@ func loginPostHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
 	if err == nil && bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil {
+		var uname, role string
+		db.QueryRow("SELECT username, role FROM users WHERE id = ?", id).Scan(&uname, &role)
 		session.Set("user_id", id)
+		session.Set("username", uname)
+		session.Set("user_role", role)
 		session.Save()
+		logActivity(id, uname, "login", "User logged in")
 		c.Redirect(http.StatusFound, "/")
 	} else {
 		session.AddFlash("Username atau password salah.")
@@ -424,9 +449,66 @@ func loginPostHandler(c *gin.Context) {
 
 func logoutHandler(c *gin.Context) {
 	session := sessions.Default(c)
+	if uid := session.Get("user_id"); uid != nil {
+		if uname := session.Get("username"); uname != nil {
+			logActivity(uid.(int), uname.(string), "logout", "User logged out")
+		}
+	}
 	session.Clear()
 	session.Save()
 	c.Redirect(http.StatusFound, "/login")
+}
+
+func changePasswordHandler(c *gin.Context) {
+	session := sessions.Default(c)
+	user := getUser(c)
+	if user == nil {
+		c.Redirect(http.StatusFound, "/login")
+		return
+	}
+	userID := user.ID
+	username := user.Username
+
+	oldPass := c.PostForm("old_password")
+	newPass := c.PostForm("new_password")
+	confirmPass := c.PostForm("confirm_password")
+
+	if newPass != confirmPass {
+		session.AddFlash("Konfirmasi password tidak cocok.")
+		session.Save()
+		c.Redirect(http.StatusFound, "/")
+		return
+	}
+
+	if len(newPass) < 6 {
+		session.AddFlash("Password minimal 6 karakter.")
+		session.Save()
+		c.Redirect(http.StatusFound, "/")
+		return
+	}
+
+	var hash string
+	err := db.QueryRow("SELECT password_hash FROM users WHERE id = ?", userID).Scan(&hash)
+	if err != nil {
+		session.AddFlash("Terjadi kesalahan.")
+		session.Save()
+		c.Redirect(http.StatusFound, "/")
+		return
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(oldPass)) != nil {
+		session.AddFlash("Password lama salah.")
+		session.Save()
+		c.Redirect(http.StatusFound, "/")
+		return
+	}
+
+	newHash, _ := bcrypt.GenerateFromPassword([]byte(newPass), bcrypt.DefaultCost)
+	db.Exec("UPDATE users SET password_hash = ? WHERE id = ?", newHash, userID)
+	logActivity(userID, username, "change_password", "Password changed")
+	session.AddFlash("Password berhasil diubah!")
+	session.Save()
+	c.Redirect(http.StatusFound, "/")
 }
 
 // View Handlers
@@ -1188,6 +1270,74 @@ func apiGetProductHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(200, p)
+}
+
+func apiCategoriesHandler(c *gin.Context) {
+	rows, err := db.Query("SELECT name FROM categories ORDER BY name ASC")
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Database error"})
+		return
+	}
+	defer rows.Close()
+	var cats []gin.H
+	for rows.Next() {
+		var name string
+		rows.Scan(&name)
+		cats = append(cats, gin.H{"name": name})
+	}
+	c.JSON(200, cats)
+}
+
+func apiSearchProductsHandler(c *gin.Context) {
+	q := strings.TrimSpace(c.Query("q"))
+	cat := strings.TrimSpace(c.Query("cat"))
+
+	var rows *sql.Rows
+	var err error
+
+	limit := 20
+	query := "SELECT id, part_number, description, category, quantity, selling_price FROM products"
+	var args []interface{}
+
+	if cat != "" && q != "" {
+		query += " WHERE category = ? AND (part_number LIKE ? OR description LIKE ?)"
+		args = append(args, cat, "%"+q+"%", "%"+q+"%")
+	} else if cat != "" {
+		query += " WHERE category = ?"
+		args = append(args, cat)
+	} else if q != "" {
+		query += " WHERE part_number LIKE ? OR description LIKE ?"
+		args = append(args, "%"+q+"%", "%"+q+"%")
+	}
+	query += " ORDER BY part_number ASC LIMIT ?"
+	args = append(args, limit)
+
+	rows, err = db.Query(query, args...)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Query error"})
+		return
+	}
+	defer rows.Close()
+
+	type ProductResult struct {
+		ID          int     `json:"id"`
+		PartNumber  string  `json:"part_number"`
+		Description string  `json:"description"`
+		Category    string  `json:"category"`
+		Quantity    int     `json:"quantity"`
+		SellingPrice float64 `json:"selling_price"`
+	}
+
+	var products []ProductResult
+	for rows.Next() {
+		var p ProductResult
+		rows.Scan(&p.ID, &p.PartNumber, &p.Description, &p.Category, &p.Quantity, &p.SellingPrice)
+		products = append(products, p)
+	}
+	if products == nil {
+		products = []ProductResult{}
+	}
+	c.JSON(200, products)
 }
 
 type CheckoutItem struct {

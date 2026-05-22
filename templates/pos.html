@@ -1,245 +1,316 @@
 {{ template "header" . }}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Left: Scanner & Cart -->
-    <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">Kasir (Point of Sale)</h3>
-            <div class="flex space-x-4 mb-4">
-                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 flex-1">
-                    <input type="radio" name="transaction_type" value="OUT" class="w-4 h-4 text-emerald-600" checked onchange="updateCartType()">
-                    <span class="ml-2 text-sm font-medium text-emerald-700">Penjualan (OUT)</span>
-                </label>
-                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 flex-1">
-                    <input type="radio" name="transaction_type" value="IN" class="w-4 h-4 text-blue-600" onchange="updateCartType()">
-                    <span class="ml-2 text-sm font-medium text-blue-700">Restock Masuk (IN)</span>
-                </label>
-            </div>
 
-            <form id="scannerForm" class="flex space-x-2">
-                <input type="text" id="scannerInput" placeholder="Scan Barcode / Ketik Part Number lalu Enter..." autofocus required class="flex-1 px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-lg outline-none">
-                <button type="submit" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-900 transition">Tambah</button>
-            </form>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- LEFT: Product Browser -->
+    <div class="lg:col-span-2 space-y-4">
+        <!-- Search & Category Filter -->
+        <div class="bg-white rounded-2xl shadow-sm border border-primary-100 p-4">
+            <div class="flex gap-2 mb-3">
+                <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                        <span class="material-symbols-outlined text-lg">search</span>
+                    </span>
+                    <input type="text" id="searchInput" placeholder="Cari produk..." autofocus
+                        class="w-full pl-10 pr-4 py-2.5 border-2 border-primary-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none transition-all">
+                </div>
+                <button onclick="searchProducts()" class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-xl transition-all cursor-pointer">
+                    <span class="material-symbols-outlined">search</span>
+                </button>
+            </div>
+            <!-- Category Pills -->
+            <div id="categoryPills" class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <button onclick="filterCategory('')" class="cat-pill active px-3 py-1.5 text-xs font-medium rounded-full border transition-all cursor-pointer whitespace-nowrap bg-primary-600 text-white border-primary-600">Semua</button>
+            </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-0 overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-gray-50 text-gray-500 text-sm">
-                        <th class="px-6 py-4 font-medium">Part Number</th>
-                        <th class="px-6 py-4 font-medium">Deskripsi</th>
-                        <th class="px-6 py-4 font-medium">Harga</th>
-                        <th class="px-6 py-4 font-medium text-center">Qty</th>
-                        <th class="px-6 py-4 font-medium text-right">Subtotal</th>
-                        <th class="px-6 py-4 font-medium text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="cartTableBody" class="divide-y divide-gray-100 text-sm">
-                    <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Keranjang Kosong. Scan barang untuk mulai.</td></tr>
-                </tbody>
-            </table>
+        <!-- Product Grid -->
+        <div id="productGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div class="col-span-full text-center py-12 text-slate-400">
+                <span class="material-symbols-outlined text-4xl block mb-2">inventory_2</span>
+                <p class="text-sm">Ketik untuk mencari produk...</p>
+            </div>
         </div>
     </div>
 
-    <!-- Right: Summary & Checkout -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-fit sticky top-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-6 border-b pb-4">Ringkasan Transaksi</h3>
-        
-        <div class="space-y-4 mb-6">
-            <div class="space-y-2">
-                <label class="block text-sm font-medium text-gray-700">Catatan (Nama Pembeli / Supplier)</label>
-                <input type="text" id="notesInput" placeholder="Opsional..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+    <!-- RIGHT: Cart -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl shadow-sm border border-primary-100 p-4 md:p-5 sticky top-24 flex flex-col h-[calc(100vh-8rem)]">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-heading font-semibold text-slate-900">Keranjang</h3>
+                <span id="cartCount" class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded-full">0</span>
             </div>
-            
-            <div class="flex justify-between items-center text-gray-600">
-                <span>Total Item</span>
-                <span id="totalItems" class="font-semibold">0</span>
-            </div>
-            
-            <div class="pt-4 border-t border-dashed border-gray-200">
-                <div class="flex justify-between items-end">
-                    <span class="text-gray-500 font-medium">Grand Total</span>
-                    <span id="grandTotal" class="text-3xl font-bold text-emerald-600">Rp 0</span>
+
+            <!-- Cart Items (Scrollable) -->
+            <div id="cartItems" class="flex-1 overflow-y-auto space-y-2 min-h-0 mb-4">
+                <div class="text-center py-8 text-slate-400">
+                    <span class="material-symbols-outlined text-3xl block mb-2">shopping_cart</span>
+                    <p class="text-xs">Klik produk untuk menambah</p>
                 </div>
             </div>
-            
-            <div class="space-y-2 pt-4">
-                <label class="block text-sm font-medium text-gray-700">Bayar / Tunai (Rp)</label>
-                <input type="text" id="cashInput" class="rupiah-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-right text-lg font-semibold" onkeyup="calculateChange()">
-            </div>
-            
-            <div class="flex justify-between items-center text-gray-600 pt-2">
-                <span>Kembalian</span>
-                <span id="changeAmount" class="font-semibold text-lg text-orange-600">Rp 0</span>
-            </div>
-        </div>
 
-        <button id="checkoutBtn" onclick="processCheckout()" disabled class="w-full py-4 text-lg font-bold text-white bg-slate-400 rounded-xl transition-colors shadow-lg flex items-center justify-center">
-            Proses Transaksi
-        </button>
+            <!-- Summary -->
+            <div class="border-t border-slate-200 pt-3 space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">Subtotal</span>
+                    <span id="subtotal" class="font-semibold text-slate-900">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">Item</span>
+                    <span id="itemCount" class="font-semibold text-slate-900">0</span>
+                </div>
+                <div class="flex justify-between items-center border-t border-slate-100 pt-2">
+                    <span class="font-heading font-semibold text-slate-900">Total</span>
+                    <span id="totalAmount" class="font-heading text-lg font-bold text-primary-700">Rp 0</span>
+                </div>
+            </div>
+
+            <!-- Cash & Change -->
+            <div class="mt-3 space-y-2">
+                <div class="flex gap-2">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-xs">Rp</span>
+                        <input type="text" id="cashInput" value="0" onkeyup="calculateChange()"
+                            class="rupiah-input w-full pl-8 pr-3 py-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-primary-500 outline-none text-sm font-bold">
+                    </div>
+                    <button onclick="quickCash(50000)" class="px-2 py-1 text-xs font-medium bg-slate-100 hover:bg-primary-100 text-slate-600 rounded-lg transition-all cursor-pointer">50rb</button>
+                    <button onclick="quickCash(100000)" class="px-2 py-1 text-xs font-medium bg-slate-100 hover:bg-primary-100 text-slate-600 rounded-lg transition-all cursor-pointer">100rb</button>
+                    <button onclick="quickCash(200000)" class="px-2 py-1 text-xs font-medium bg-slate-100 hover:bg-primary-100 text-slate-600 rounded-lg transition-all cursor-pointer">200rb</button>
+                </div>
+                <div id="changeDisplay" class="hidden text-right">
+                    <span class="text-xs text-slate-500">Kembalian: </span>
+                    <span id="changeAmount" class="font-bold text-emerald-600">Rp 0</span>
+                </div>
+            </div>
+
+            <!-- Checkout Button -->
+            <button onclick="checkout()" id="checkoutBtn" disabled
+                class="mt-3 w-full py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer text-sm">
+                <span class="material-symbols-outlined">point_of_sale</span>
+                Bayar
+            </button>
+        </div>
     </div>
 </div>
 
 <script>
-    let cart = [];
-    
-    function formatMoney(amount) {
-        return amount.toLocaleString('id-ID');
-    }
+// ======= STATE =======
+let cart = [];
+let categories = [];
+let products = [];
+let currentCategory = '';
+let searchTimer = null;
 
-    function updateCartType() {
-        renderCart();
-    }
+// ======= FORMATTER =======
+function fmt(a) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(a); }
 
-    document.getElementById('scannerForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const input = document.getElementById('scannerInput');
-        const barcode = input.value.trim();
-        if (!barcode) return;
+// ======= INIT =======
+document.addEventListener('DOMContentLoaded', function() {
+    loadCategories();
+    document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(searchProducts, 300);
+    });
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') searchProducts();
+    });
+});
 
-        fetch('/api/product/' + barcode)
-            .then(res => res.json())
-            .then(data => {
-                if(data.error) {
-                    alert(data.error);
-                } else {
-                    addToCart(data);
-                }
-                input.value = '';
-                input.focus();
-            })
-            .catch(err => {
-                alert("Koneksi error!");
+function loadCategories() {
+    fetch('/api/product/_categories')
+        .then(r => r.json())
+        .then(data => {
+            categories = data;
+            const container = document.getElementById('categoryPills');
+            let html = '<button onclick="filterCategory(\'\')" class="cat-pill active px-3 py-1.5 text-xs font-medium rounded-full border transition-all cursor-pointer whitespace-nowrap bg-primary-600 text-white border-primary-600">Semua</button>';
+            categories.forEach(c => {
+                html += `<button onclick="filterCategory('${c.name}')" class="cat-pill px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 text-slate-600 hover:bg-primary-50 hover:border-primary-300 transition-all cursor-pointer whitespace-nowrap">${c.name}</button>`;
             });
+            container.innerHTML = html;
+            searchProducts();
+        })
+        .catch(() => {});
+}
+
+function filterCategory(cat) {
+    currentCategory = cat;
+    document.querySelectorAll('.cat-pill').forEach(el => {
+        if (el.textContent.trim() === (cat || 'Semua')) {
+            el.className = 'cat-pill active px-3 py-1.5 text-xs font-medium rounded-full border transition-all cursor-pointer whitespace-nowrap bg-primary-600 text-white border-primary-600';
+        } else {
+            el.className = 'cat-pill px-3 py-1.5 text-xs font-medium rounded-full border border-slate-200 text-slate-600 hover:bg-primary-50 hover:border-primary-300 transition-all cursor-pointer whitespace-nowrap';
+        }
+    });
+    searchProducts();
+}
+
+function searchProducts() {
+    const q = document.getElementById('searchInput').value.trim();
+    let url = '/api/products/search?q=' + encodeURIComponent(q);
+    if (currentCategory) url += '&cat=' + encodeURIComponent(currentCategory);
+
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            products = data;
+            renderProducts();
+        })
+        .catch(() => {});
+}
+
+function renderProducts() {
+    const grid = document.getElementById('productGrid');
+    if (products.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400"><span class="material-symbols-outlined text-4xl block mb-2">inventory_2</span><p class="text-sm">Produk tidak ditemukan</p></div>';
+        return;
+    }
+    let html = '';
+    products.forEach(p => {
+        const inCart = cart.find(i => i.id === p.id);
+        const qty = inCart ? inCart.qty : 0;
+        html += `<div onclick="addToCart(${p.id},'${p.part_number}','${p.description.replace(/'/g,"\\'")}',${p.selling_price},${p.quantity})" 
+            class="card-hover bg-white rounded-xl border ${qty > 0 ? 'border-primary-500 bg-primary-50' : 'border-slate-200'} p-3 cursor-pointer">
+            <div class="text-xs font-bold text-primary-700 truncate">${p.part_number}</div>
+            <div class="text-xs text-slate-600 mt-1 line-clamp-2 leading-tight">${p.description}</div>
+            <div class="flex items-center justify-between mt-2">
+                <span class="text-sm font-bold text-primary-700">${fmt(p.selling_price)}</span>
+                ${qty > 0 ? `<span class="bg-primary-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">${qty}</span>` : ''}
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1">Stok: ${p.quantity}</div>
+        </div>`;
+    });
+    grid.innerHTML = html;
+}
+
+// ======= CART =======
+function addToCart(id, pn, desc, price, stock) {
+    const exist = cart.find(i => i.id === id);
+    if (exist) {
+        if (exist.qty >= stock) { alert('Stok tersedia: ' + stock); return; }
+        exist.qty++;
+    } else {
+        cart.push({ id, part_number: pn, description: desc, price, qty: 1, stock });
+    }
+    renderCart();
+    renderProducts();
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    renderCart();
+    renderProducts();
+}
+
+function changeQty(index, delta) {
+    const item = cart[index];
+    const n = item.qty + delta;
+    if (n < 1) return removeFromCart(index);
+    if (n > item.stock) { alert('Stok: ' + item.stock); return; }
+    item.qty = n;
+    renderCart();
+    renderProducts();
+}
+
+function renderCart() {
+    const container = document.getElementById('cartItems');
+    const count = document.getElementById('cartCount');
+    const btn = document.getElementById('checkoutBtn');
+
+    if (cart.length === 0) {
+        container.innerHTML = '<div class="text-center py-8 text-slate-400"><span class="material-symbols-outlined text-3xl block mb-2">shopping_cart</span><p class="text-xs">Klik produk untuk menambah</p></div>';
+        count.textContent = '0'; btn.disabled = true;
+        document.getElementById('subtotal').textContent = 'Rp 0';
+        document.getElementById('totalAmount').textContent = 'Rp 0';
+        document.getElementById('itemCount').textContent = '0';
+        return;
+    }
+
+    let html = '';
+    let subtotal = 0;
+    let totalItems = 0;
+
+    cart.forEach((item, i) => {
+        const total = item.price * item.qty;
+        subtotal += total;
+        totalItems += item.qty;
+        html += `<div class="flex items-center gap-2 bg-white rounded-xl border border-slate-100 p-2.5">
+            <div class="flex-1 min-w-0">
+                <div class="text-xs font-semibold text-primary-700 truncate">${item.part_number}</div>
+                <div class="text-[10px] text-slate-500 truncate">${item.description}</div>
+                <div class="text-xs font-bold text-slate-900 mt-0.5">${fmt(total)}</div>
+            </div>
+            <div class="flex items-center gap-1">
+                <button onclick="changeQty(${i},-1)" class="w-6 h-6 flex items-center justify-center bg-slate-100 hover:bg-red-100 rounded-lg transition-all cursor-pointer text-xs font-bold">-</button>
+                <span class="w-6 text-center text-xs font-bold text-slate-900">${item.qty}</span>
+                <button onclick="changeQty(${i},1)" class="w-6 h-6 flex items-center justify-center bg-slate-100 hover:bg-emerald-100 rounded-lg transition-all cursor-pointer text-xs font-bold">+</button>
+            </div>
+            <button onclick="removeFromCart(${i})" class="p-1 text-slate-400 hover:text-red-500 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+        </div>`;
     });
 
-    function addToCart(product) {
-        const existingItem = cart.find(i => i.id === product.id);
-        if (existingItem) {
-            existingItem.qty += 1;
-        } else {
-            cart.push({
-                id: product.id,
-                part_number: product.part_number,
-                description: product.description,
-                capital_price: product.capital_price,
-                selling_price: product.selling_price,
-                qty: 1
-            });
-        }
-        renderCart();
-    }
+    container.innerHTML = html;
+    count.textContent = totalItems;
+    btn.disabled = false;
+    document.getElementById('subtotal').textContent = fmt(subtotal);
+    document.getElementById('totalAmount').textContent = fmt(subtotal);
+    document.getElementById('itemCount').textContent = totalItems;
+    calculateChange();
+}
 
-    function updateQty(id, delta) {
-        const item = cart.find(i => i.id === id);
-        if(item) {
-            item.qty += delta;
-            if(item.qty <= 0) {
-                cart = cart.filter(i => i.id !== id);
-            }
+function quickCash(val) {
+    document.getElementById('cashInput').value = val;
+    calculateChange();
+}
+
+function calculateChange() {
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    let cash = parseInt(document.getElementById('cashInput').value.replace(/[^,\d]/g, '').replace(/,/g, '')) || 0;
+    const d = document.getElementById('changeDisplay');
+    const a = document.getElementById('changeAmount');
+    if (cash >= total && total > 0) {
+        d.classList.remove('hidden');
+        a.textContent = fmt(cash - total);
+    } else {
+        d.classList.add('hidden');
+    }
+}
+
+function checkout() {
+    if (!cart.length) return;
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    let cash = parseInt(document.getElementById('cashInput').value.replace(/[^,\d]/g, '').replace(/,/g, '')) || 0;
+    if (cash < total) { alert('Uang tidak cukup!'); return; }
+    if (!confirm('Bayar ' + fmt(total) + '?')) return;
+
+    fetch('/pos/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            type: 'OUT',
+            notes: 'POS Sale',
+            items: cart.map(i => ({ product_id: i.id, qty: i.qty }))
+        })
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            cart = [];
             renderCart();
-        }
-    }
-
-    function calculateChange() {
-        const cashRaw = document.getElementById('cashInput').value.replace(/[^,\d]/g, '');
-        const cash = parseFloat(cashRaw) || 0;
-        let gTotal = 0;
-        
-        const type = document.querySelector('input[name="transaction_type"]:checked').value;
-        cart.forEach(item => {
-            let price = type === 'OUT' ? item.selling_price : item.capital_price;
-            gTotal += price * item.qty;
-        });
-
-        const change = cash - gTotal;
-        document.getElementById('changeAmount').innerText = "Rp " + formatMoney(change < 0 ? 0 : change);
-    }
-
-    function renderCart() {
-        const tbody = document.getElementById('cartTableBody');
-        const type = document.querySelector('input[name="transaction_type"]:checked').value;
-        
-        let html = '';
-        let grandTotal = 0;
-        let totalItems = 0;
-
-        if (cart.length === 0) {
-            html = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Keranjang Kosong. Scan barang untuk mulai.</td></tr>';
+            renderProducts();
+            document.getElementById('cashInput').value = '0';
+            window.open('/receipt/' + d.receipt_id, '_blank');
         } else {
-            cart.forEach(item => {
-                let price = type === 'OUT' ? item.selling_price : item.capital_price;
-                let subtotal = price * item.qty;
-                grandTotal += subtotal;
-                totalItems += item.qty;
-
-                html += `
-                <tr class="hover:bg-slate-50">
-                    <td class="px-6 py-3 font-medium text-gray-800">${item.part_number}</td>
-                    <td class="px-6 py-3 text-gray-500">${item.description}</td>
-                    <td class="px-6 py-3 text-gray-600">Rp ${formatMoney(price)}</td>
-                    <td class="px-6 py-3 text-center">
-                        <div class="flex items-center justify-center space-x-2">
-                            <button type="button" onclick="updateQty(${item.id}, -1)" class="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">-</button>
-                            <span class="w-8 text-center font-medium">${item.qty}</span>
-                            <button type="button" onclick="updateQty(${item.id}, 1)" class="w-6 h-6 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">+</button>
-                        </div>
-                    </td>
-                    <td class="px-6 py-3 text-right font-medium text-gray-800">Rp ${formatMoney(subtotal)}</td>
-                    <td class="px-6 py-3 text-center">
-                        <button type="button" onclick="updateQty(${item.id}, -${item.qty})" class="text-red-500 hover:text-red-700">Hapus</button>
-                    </td>
-                </tr>`;
-            });
+            alert('Error: ' + d.error);
         }
-
-        tbody.innerHTML = html;
-        document.getElementById('totalItems').innerText = totalItems;
-        document.getElementById('grandTotal').innerText = "Rp " + formatMoney(grandTotal);
-
-        const btn = document.getElementById('checkoutBtn');
-        if (cart.length > 0) {
-            btn.disabled = false;
-            btn.classList.remove('bg-slate-400');
-            btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-        } else {
-            btn.disabled = true;
-            btn.classList.add('bg-slate-400');
-            btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-        }
-
-        calculateChange();
-    }
-
-    function processCheckout() {
-        if(cart.length === 0) return;
-        const type = document.querySelector('input[name="transaction_type"]:checked').value;
-        const notes = document.getElementById('notesInput').value;
-
-        const payload = {
-            type: type,
-            notes: notes,
-            items: cart.map(i => ({product_id: i.id, qty: i.qty}))
-        };
-
-        document.getElementById('checkoutBtn').disabled = true;
-        document.getElementById('checkoutBtn').innerText = "Memproses...";
-
-        fetch('/pos/checkout', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.error) {
-                alert("Error: " + data.error);
-                document.getElementById('checkoutBtn').disabled = false;
-                document.getElementById('checkoutBtn').innerText = "Proses Transaksi";
-            } else {
-                window.location.href = "/receipt/" + data.receipt_id;
-            }
-        })
-        .catch(err => alert("Gagal memproses transaksi!"));
-    }
+    })
+    .catch(e => alert('Error: ' + e));
+}
 </script>
+
+<style>
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
+
 {{ template "footer" . }}

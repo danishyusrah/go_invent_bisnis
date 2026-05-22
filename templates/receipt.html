@@ -3,66 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Struk {{ .ReceiptID }}</title>
+    <title>Struk - {{ .ReceiptID }}</title>
     <style>
-        body { font-family: 'Courier New', Courier, monospace; background: #e0e0e0; display: flex; justify-content: center; padding: 20px; }
-        .receipt { background: #fff; width: 300px; padding: 20px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .center { text-align: center; }
-        .bold { font-weight: bold; }
-        .line { border-bottom: 1px dashed #000; margin: 10px 0; }
-        .flex { display: flex; justify-content: space-between; }
-        .text-sm { font-size: 12px; }
-        .mt { margin-top: 10px; }
-        @media print {
-            body { background: #fff; padding: 0; }
-            .receipt { width: 100%; border: none; box-shadow: none; padding: 0; }
-            .no-print { display: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', 'Lucida Console', monospace;
+            width: 72mm;
+            margin: 0 auto;
+            padding: 6px 5px;
+            font-size: 10px;
+            line-height: 1.5;
+            color: #000;
+            background: #fff;
         }
-        .btn { display: block; width: 100%; padding: 10px; background: #000; color: #fff; text-align: center; text-decoration: none; font-family: sans-serif; margin-top: 20px; cursor: pointer; border: none; }
+        .c { text-align: center; }
+        .r { text-align: right; }
+        .b { font-weight: bold; }
+        .muted { color: #888; }
+        .line-dash { border: none; border-top: 1px dashed #999; margin: 5px 0; }
+        .line-double { border: none; border-top: 2px double #000; margin: 5px 0; }
+        .header { text-align: center; margin-bottom: 6px; }
+        .header h1 { font-size: 15px; font-weight: bold; letter-spacing: 1px; }
+        .header p { font-size: 9px; color: #666; margin-top: 1px; }
+        .info { font-size: 10px; margin-bottom: 6px; }
+        .info-row { display: flex; justify-content: space-between; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        thead th { padding: 3px 1px; font-size: 9px; border-top: 1px dashed #999; border-bottom: 1px dashed #999; text-align: left; }
+        thead th:nth-child(2), thead th:nth-child(3), thead th:nth-child(4) { text-align: right; }
+        tbody td { padding: 2px 1px; vertical-align: top; }
+        td:nth-child(2), td:nth-child(3), td:nth-child(4) { text-align: right; white-space: nowrap; }
+        .pn { font-weight: bold; font-size: 10px; }
+        .desc { color: #666; font-size: 9px; }
+        .total-line { text-align: right; padding-top: 4px; font-size: 13px; font-weight: bold; }
+        .footer { text-align: center; margin-top: 6px; padding-top: 6px; font-size: 9px; color: #888; }
+        .actions { text-align: center; margin-top: 10px; }
+        .actions button { padding: 7px 18px; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: Arial, sans-serif; }
+        .btn-print { background: #EE4D2D; color: #fff; }
+        .btn-close { background: #eee; color: #555; margin-left: 6px; }
+        .wn { white-space: nowrap; }
+        @media print {
+            @page { margin: 0; size: 72mm auto; }
+            body { padding: 3px 5px; }
+            .actions { display: none !important; }
+        }
     </style>
 </head>
 <body>
-    <div class="receipt">
-        <div class="center">
-            <h2 style="margin:0;">JACK SOUND AUDIO</h2>
-            <p class="text-sm" style="margin:5px 0;">Jl. Contoh No. 123, Kota</p>
-            <p class="text-sm" style="margin:0;">Telp: 0812-3456-7890</p>
-        </div>
-        <div class="line"></div>
-        <div class="text-sm">
-            <div class="flex"><span>No:</span><span>{{ .ReceiptID }}</span></div>
-            <div class="flex"><span>Tgl:</span><span>{{ .Date }}</span></div>
-            <div class="flex"><span>Kasir:</span><span>{{ .Cashier }}</span></div>
-            <div class="flex"><span>Tipe:</span><span class="bold">{{ if eq .Type "OUT" }}Penjualan{{ else }}Restock Masuk{{ end }}</span></div>
-        </div>
-        <div class="line"></div>
-        
-        <div class="text-sm">
-            {{ range .Items }}
-            <div style="margin-bottom: 5px;">
-                <div class="bold">{{ .Desc }}</div>
-                <div class="flex">
-                    <span>{{ .Qty }} x {{ rupiah .Price }}</span>
-                    <span>{{ rupiah .Total }}</span>
-                </div>
-            </div>
-            {{ end }}
-        </div>
-        
-        <div class="line"></div>
-        <div class="flex bold">
-            <span>TOTAL</span>
-            <span>Rp {{ rupiah .Total }}</span>
-        </div>
-        <div class="line"></div>
-        
-        <div class="center text-sm mt">
-            <p>Terima kasih atas kunjungan Anda!</p>
-            <p>Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.</p>
-        </div>
-
-        <button class="btn no-print" onclick="window.print()">Cetak Struk</button>
-        <a href="/pos" class="btn no-print" style="background:#555; margin-top:5px;">Kembali ke Kasir</a>
+    <div class="header">
+        <h1>{{ StoreName }}</h1>
+        <p>INVENTORY &amp; POS SYSTEM</p>
+        <hr class="line-dash">
     </div>
+
+    <div class="info">
+        <div class="info-row"><span class="muted">Receipt</span><span class="wn">{{ .ReceiptID }}</span></div>
+        <div class="info-row"><span class="muted">Tanggal</span><span class="wn">{{ .Date }}</span></div>
+        <div class="info-row"><span class="muted">Kasir</span><span class="wn">{{ if .Cashier }}{{ .Cashier }}{{ else }}System{{ end }}</span></div>
+        <div class="info-row"><span class="muted">Tipe</span><span class="wn">{{ if eq .Type "OUT" }}PENJUALAN{{ else }}PEMBELIAN{{ end }}</span></div>
+    </div>
+
+    <hr class="line-dash">
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:44%">Produk</th>
+                <th style="width:10%">Qty</th>
+                <th style="width:22%">Harga</th>
+                <th style="width:24%">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range .Items }}
+            <tr>
+                <td>
+                    <div class="pn">{{ .PartNumber }}</div>
+                    <div class="desc">{{ .Desc }}</div>
+                </td>
+                <td>{{ .Qty }}</td>
+                <td>{{ printf "%12s" (rupiah .Price) }}</td>
+                <td>{{ printf "%12s" (rupiah .Total) }}</td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+
+    <hr class="line-double">
+
+    <div class="total-line">
+        TOTAL &nbsp; {{ printf "%14s" (rupiah .Total) }}
+    </div>
+
+    <hr class="line-dash">
+
+    <div class="footer">
+        <p>Terima kasih telah berbelanja!</p>
+        <p>{{ StoreName }} - Inventory POS System</p>
+    </div>
+
+    <div class="actions">
+        <button class="btn-print" onclick="window.print()">Cetak Struk</button>
+        <button class="btn-close" onclick="window.close()">Tutup</button>
+    </div>
+
+    <script>window.print();</script>
 </body>
 </html>
